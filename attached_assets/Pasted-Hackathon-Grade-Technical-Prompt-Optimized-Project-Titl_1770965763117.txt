@@ -1,0 +1,275 @@
+Hackathon-Grade Technical Prompt (Optimized)
+
+Project Title
+
+JobShield AI — Explainable Recruitment Scam Detection with Company Legitimacy Verification and Risk Fusion Scoring
+
+Problem Context
+
+Recruitment fraud via WhatsApp, email, Telegram, and unofficial job channels has become a major cybersecurity and fintech threat. Scam job offers typically exhibit:
+
+Linguistic manipulation patterns
+
+Unrealistic compensation signals
+
+Fake company impersonation
+
+Unverified recruiter identity
+
+Requests for monetary transactions
+
+Existing job portals lack real-time fraud scoring, company authenticity validation, and explainable scam intelligence.
+
+Objective
+
+Develop an end-to-end AI-based fraud detection system that performs:
+
+NLP-driven scam classification
+
+Entity-level company verification
+
+Behavioral anomaly scoring (salary + urgency)
+
+Multi-factor risk fusion
+
+Explainable evidence highlighting
+
+Automated forensic PDF reporting
+
+The platform must be deployable as an interactive hackathon-ready web dashboard.
+
+✅ System Architecture & Technical Workflow
+
+1. Multi-Channel Input Ingestion Layer
+
+Support structured and unstructured recruitment content from:
+
+Email body text
+
+WhatsApp/Telegram chat messages
+
+Job description snippets
+
+Optional OCR-extracted text from screenshots
+
+All inputs are normalized into a unified document schema.
+
+2. NLP Preprocessing & Feature Engineering Pipeline
+
+Text Standardization
+
+Unicode normalization
+
+Stopword removal
+
+Lemmatization
+
+Noise filtering (URLs, phone numbers, emojis)
+
+Feature Extraction Approaches
+
+TF-IDF vectorization (baseline)
+
+Word embeddings (Sentence-BERT optional)
+
+Keyword-based risk token encoding
+
+3. Supervised Scam Classification Models
+
+Train and benchmark multiple ML classifiers:
+
+Logistic Regression (baseline benchmark)
+
+Decision Tree (interpretable rule induction)
+
+K-Nearest Neighbors (similarity-based detection)
+
+Random Forest (ensemble robustness)
+
+Gradient Boosting / XGBoost (state-of-the-art tabular NLP performance)
+
+Evaluation Metrics
+
+Precision / Recall (fraud-sensitive)
+
+F1-score
+
+ROC-AUC
+
+Confusion Matrix analysis
+
+The best-performing model is selected via cross-validation.
+
+4. Hybrid Fraud Rule Engine (High-Confidence Triggers)
+
+In parallel with ML, implement deterministic fraud heuristics for known scam signatures:
+
+“Pay registration/interview fee”
+
+“Instant offer without screening”
+
+“Urgent joining within 24 hours”
+
+“HR contacting only via WhatsApp”
+
+Suspicious payment/wallet instructions
+
+This creates a hybrid AI system:
+
+Statistical classification + rule-based enforcement
+
+Improving reliability under limited hackathon datasets.
+
+5. Company Legitimacy Verification Module
+
+Perform real-time company authenticity checks using public registries:
+
+Primary Source
+
+OpenCorporates API lookup
+
+Jurisdiction match
+
+Active/inactive status
+
+Incorporation timestamp
+
+Registered identifier
+
+Secondary Validation Signals
+
+Email domain-company name consistency
+
+Website age + SSL presence (lightweight)
+
+Output: Company Existence Confidence Score
+
+6. Recruiter Identity & Social Trust Scoring
+
+Instead of illegal LinkedIn scraping, implement a compliance-safe validation layer:
+
+Recruiter email trust score (Gmail vs corporate domain)
+
+Optional LinkedIn profile link submission
+
+Rule-based profile credibility scoring:
+
+Company association
+
+Account maturity
+
+Network presence (manual input)
+
+7. Compensation Anomaly Detection Layer
+
+Detect unrealistic salary offers using market-aligned benchmarks:
+
+Compare offered salary vs expected distribution
+
+Static dataset reference (Glassdoor/Kaggle ranges)
+
+Techniques:
+
+Z-score deviation
+
+Quantile-based anomaly scoring
+
+Output: Salary Plausibility Index
+
+8. Risk Fusion Engine (Unified Fraud Score)
+
+Fuse heterogeneous risk signals into a final probabilistic scam score:
+
+Inputs
+
+ML fraud probability
+
+Rule-engine trigger weight
+
+Company verification confidence
+
+Recruiter trust score
+
+Salary anomaly score
+
+Output
+
+Scam Probability: 0–100%
+
+Risk Tier Classification:
+
+Low Risk
+
+Moderate Risk
+
+High Scam Likelihood
+
+Critical Fraud Pattern
+
+This is essentially a lightweight fraud scoring system similar to fintech risk engines.
+
+9. Explainable AI & Evidence Attribution
+
+Provide transparency through:
+
+Suspicious phrase highlighting
+
+Feature importance extraction (tree-based models)
+
+Explanation breakdown:
+
+Example:
+
+Company not found in registry
+
+Scam keyword triggers detected
+
+Salary anomaly score high
+
+Recruiter domain mismatch
+
+This improves interpretability for judges and end-users.
+
+10. Automated Forensic Report Generation (PDF Output)
+
+Generate a structured fraud analysis report using ReportLab:
+
+Scam score summary
+
+Risk classification
+
+Evidence markers
+
+Company verification outcome
+
+Recommended user action:
+
+Ignore
+
+Proceed with caution
+
+Report immediately
+
+A downloadable PDF is produced by default after each scan.
+
+11. Ethical Scam Reporting Module (Hackathon-Safe)
+
+Avoid public blacklisting due to legal constraints.
+
+Instead, implement:
+
+Internal flagged scam repository
+
+User-driven “Report Suspicious Offer” feature
+
+Analytics dashboard showing scam patterns (demo dataset)
+
+
+
+
+
+
+
+make everything in requied files and then i want you to push it in my gihub repo through the below link
+
+"https://github.com/HEMANTH2208/Hackrush".
