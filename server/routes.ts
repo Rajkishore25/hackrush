@@ -166,6 +166,25 @@ export async function registerRoutes(
       if (analysis.company_verification.details) {
         doc.text(`Details: ${analysis.company_verification.details}`);
       }
+      doc.moveDown();
+    }
+
+    if (analysis.suspicious_phrases?.length) {
+      doc.fontSize(14).text("Detected Anomalies & Suspicious Content:");
+      analysis.suspicious_phrases.forEach((item: any) => {
+        doc.fontSize(12).font('Helvetica-Bold').text(`"${item.text}"`, { indent: 20 });
+        doc.fontSize(11).font('Helvetica').text(`Reason: ${item.reason}`, { indent: 40 });
+        doc.moveDown(0.5);
+      });
+      doc.moveDown();
+    }
+
+    if (analysis.salary_analysis) {
+      doc.fontSize(14).text("Compensation Analysis:");
+      doc.fontSize(12).text(`Result: ${analysis.salary_analysis.plausible ? "Market Aligned" : "Potential Anomaly"}`);
+      if (analysis.salary_analysis.reason) {
+        doc.text(`Finding: ${analysis.salary_analysis.reason}`);
+      }
     }
 
     doc.end();
