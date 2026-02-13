@@ -24,11 +24,11 @@ export default function Landing() {
             <span className="self-center text-xl font-bold font-display tracking-tight whitespace-nowrap">JobShield AI</span>
           </a>
           <div className="flex md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-            <Link href="/api/login">
+            <a href="/api/login">
               <button className="text-white bg-primary hover:bg-blue-600 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-all shadow-lg shadow-blue-500/20">
                 Get Started
               </button>
-            </Link>
+            </a>
           </div>
         </div>
       </nav>
@@ -54,11 +54,11 @@ export default function Landing() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/api/login">
+            <a href="/api/login">
               <button className="px-8 py-4 bg-primary text-white rounded-xl font-semibold text-lg hover:bg-blue-600 transition-all shadow-xl shadow-blue-500/20 hover:shadow-blue-500/30 hover:-translate-y-1 w-full sm:w-auto">
                 Analyze Free Sample
               </button>
-            </Link>
+            </a>
             <button className="px-8 py-4 bg-card border border-border text-foreground rounded-xl font-semibold text-lg hover:bg-muted transition-all w-full sm:w-auto">
               View Demo Report
             </button>

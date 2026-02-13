@@ -20,9 +20,6 @@ export function Sidebar() {
   const navItems = [
     { icon: LayoutDashboard, label: "Dashboard", href: "/" },
     { icon: ShieldAlert, label: "New Scan", href: "/scan/new" },
-    { icon: History, label: "History", href: "/history" },
-    { icon: FileText, label: "Reports", href: "/reports" },
-    { icon: Settings, label: "Settings", href: "/settings" },
   ];
 
   const getInitials = (name: string) => {
