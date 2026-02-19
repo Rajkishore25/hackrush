@@ -5,6 +5,8 @@ import { api } from "@shared/routes";
 import { z } from "zod";
 import { openai } from "./replit_integrations/image/client"; // Re-using openai client from integration
 import { setupAuth, registerAuthRoutes, isAuthenticated } from "./replit_integrations/auth";
+import { mockAnalyzeContent } from "./mockAI";
+import Groq from "groq-sdk";
 import PDFDocument from "pdfkit";
 import fs from "fs";
 import path from "path";
@@ -13,6 +15,11 @@ import { fileURLToPath } from "url";
 // For __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Initialize Groq client
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 export async function registerRoutes(
   httpServer: Server,
@@ -31,37 +38,99 @@ export async function registerRoutes(
       const input = api.scans.create.input.parse(req.body);
       const userId = req.user.claims.sub;
 
-      // === AI ANALYSIS ===
-      // Construct prompt for OpenAI
-      const systemPrompt = `You are an expert Recruitment Fraud Detection Analyst. 
-      Analyze the provided content (email, chat, job description) for scam indicators.
+      let analysis: any;
+
+      // Check if we have a Groq API key (preferred - free!)
+      const hasGroqKey = process.env.GROQ_API_KEY && process.env.GROQ_API_KEY.startsWith('gsk_');
       
-      Return a JSON object with:
-      - risk_score (0-100 integer)
-      - risk_level ("low", "moderate", "high", "critical")
-      - flags (array of strings, e.g. "Unrealistic Salary", "Gmail domain")
-      - suspicious_phrases (array of objects {text, reason, category})
-      - company_verification (object {found: boolean, name: string, trust_score: number, details: string})
-      - salary_analysis (object {plausible: boolean, reason: string})
-      - summary (string)
-      
-      If company verification is needed, assume "Not Verified" unless it is a very well known company like Google, Microsoft, etc.`;
+      // Check if we have a valid OpenAI API key
+      const hasOpenAIKey = process.env.AI_INTEGRATIONS_OPENAI_API_KEY && 
+                          !process.env.AI_INTEGRATIONS_OPENAI_API_KEY.includes('placeholder');
 
-      const userPrompt = `Input Type: ${input.inputType}
-      Content: 
-      ${input.content}`;
+      if (hasGroqKey) {
+        // === GROQ AI ANALYSIS (FREE!) ===
+        console.log("Using Groq AI for analysis...");
+        const systemPrompt = `You are an expert Recruitment Fraud Detection Analyst. 
+        Analyze the provided content (email, chat, job description) for scam indicators.
+        
+        Return a JSON object with:
+        - risk_score (0-100 integer)
+        - risk_level ("low", "moderate", "high", "critical")
+        - flags (array of strings, e.g. "Unrealistic Salary", "Gmail domain")
+        - suspicious_phrases (array of objects {text, reason, category})
+        - company_verification (object {found: boolean, name: string, trust_score: number, details: string})
+        - salary_analysis (object {plausible: boolean, reason: string})
+        - summary (string)
+        
+        If company verification is needed, assume "Not Verified" unless it is a very well known company like Google, Microsoft, etc.`;
 
-      const aiResponse = await openai.chat.completions.create({
-        model: "gpt-5.1", // Or gpt-4o
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        response_format: { type: "json_object" }
-      });
+        const userPrompt = `Input Type: ${input.inputType}
+        Content: 
+        ${input.content}`;
 
-      const analysisRaw = aiResponse.choices[0].message.content || "{}";
-      const analysis = JSON.parse(analysisRaw);
+        try {
+          const completion = await groq.chat.completions.create({
+            model: "llama-3.3-70b-versatile", // Fast and free Groq model
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 2000,
+            response_format: { type: "json_object" }
+          });
+
+          const analysisRaw = completion.choices[0]?.message?.content || "{}";
+          analysis = JSON.parse(analysisRaw);
+          console.log("Groq analysis completed successfully");
+        } catch (groqError: any) {
+          console.error("Groq API Error:", groqError.message);
+          console.log("Falling back to mock analysis...");
+          analysis = await mockAnalyzeContent(input.content, input.inputType);
+        }
+      } else if (hasOpenAIKey) {
+        // === OPENAI AI ANALYSIS ===
+        console.log("Using OpenAI for analysis...");
+        const systemPrompt = `You are an expert Recruitment Fraud Detection Analyst. 
+        Analyze the provided content (email, chat, job description) for scam indicators.
+        
+        Return a JSON object with:
+        - risk_score (0-100 integer)
+        - risk_level ("low", "moderate", "high", "critical")
+        - flags (array of strings, e.g. "Unrealistic Salary", "Gmail domain")
+        - suspicious_phrases (array of objects {text, reason, category})
+        - company_verification (object {found: boolean, name: string, trust_score: number, details: string})
+        - salary_analysis (object {plausible: boolean, reason: string})
+        - summary (string)
+        
+        If company verification is needed, assume "Not Verified" unless it is a very well known company like Google, Microsoft, etc.`;
+
+        const userPrompt = `Input Type: ${input.inputType}
+        Content: 
+        ${input.content}`;
+
+        try {
+          const aiResponse = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ],
+            response_format: { type: "json_object" }
+          });
+
+          const analysisRaw = aiResponse.choices[0].message.content || "{}";
+          analysis = JSON.parse(analysisRaw);
+        } catch (aiError: any) {
+          console.error("OpenAI API Error:", aiError.message);
+          console.log("Falling back to mock analysis...");
+          analysis = await mockAnalyzeContent(input.content, input.inputType);
+        }
+      } else {
+        // === MOCK AI ANALYSIS (No valid API key) ===
+        console.log("Using mock AI analysis (no valid API key)");
+        analysis = await mockAnalyzeContent(input.content, input.inputType);
+      }
 
       // Save to DB
       const scan = await storage.createScan({

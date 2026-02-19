@@ -20,6 +20,22 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  
+  // Use in-memory store for local development
+  if (!process.env.REPL_ID) {
+    return session({
+      secret: process.env.SESSION_SECRET || "dev-secret-key-12345",
+      resave: false,
+      saveUninitialized: false,
+      cookie: {
+        httpOnly: true,
+        secure: false, // Set to false for local development
+        maxAge: sessionTtl,
+      },
+    });
+  }
+  
+  // Use PostgreSQL store for production (Replit)
   const pgStore = connectPg(session);
   const sessionStore = new pgStore({
     conString: process.env.DATABASE_URL,
@@ -61,6 +77,20 @@ async function upsertUser(claims: any) {
 }
 
 export async function setupAuth(app: Express) {
+  // Skip Replit auth setup in local development
+  if (!process.env.REPL_ID) {
+    console.log("Running in local mode - Replit auth disabled");
+    app.use(getSession());
+    app.use(passport.initialize());
+    app.use(passport.session());
+    
+    // Mock user for local development
+    passport.serializeUser((user: Express.User, cb) => cb(null, user));
+    passport.deserializeUser((user: Express.User, cb) => cb(null, user));
+    
+    return;
+  }
+  
   app.set("trust proxy", 1);
   app.use(getSession());
   app.use(passport.initialize());
@@ -131,6 +161,34 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  // In local development, create a mock user
+  if (!process.env.REPL_ID) {
+    const mockUser = {
+      claims: {
+        sub: "local-dev-user",
+        email: "dev@localhost",
+        first_name: "Dev",
+        last_name: "User"
+      }
+    };
+    
+    // Ensure the mock user exists in the database
+    try {
+      await authStorage.upsertUser({
+        id: mockUser.claims.sub,
+        email: mockUser.claims.email,
+        firstName: mockUser.claims.first_name,
+        lastName: mockUser.claims.last_name,
+        profileImageUrl: null,
+      });
+    } catch (error) {
+      console.error("Error creating mock user:", error);
+    }
+    
+    (req as any).user = mockUser;
+    return next();
+  }
+  
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user.expires_at) {
